@@ -59,10 +59,31 @@ class World:
     def world(self):
         return self.space
 
+clients = list()
+
+def send_all(msg):
+    for client in clients:
+        client.put( msg )
+
+def send_all_json(obj):
+    send_all( json.dumps(obj) )
+
+class Client:
+    def __init__(self):
+        self.queue = queue.Queue()
+
+    def put(self, v):
+        self.queue.put_nowait(v)
+
+    def get(self):
+        return self.queue.get()
+
 myWorld = World()        
 
 def set_listener( entity, data ):
     ''' do something with the update ! '''
+    pass
+    myWorld.set( entity, data )
 
 myWorld.add_set_listener( set_listener )
         
@@ -71,7 +92,7 @@ def hello():
     '''Return something coherent here.. perhaps redirect to /static/index.html '''
     return redirect('/static/index.html')
 
-def read_ws(ws,client):
+def read_ws(ws, client):
     '''A greenlet function that reads from the websocket and updates the world'''
     # greenlet: lightweight coroutines for concurrent programming
 
@@ -82,7 +103,7 @@ def read_ws(ws,client):
             print("WS RECV: %s" % msg)
             if (msg is not None):
                 packet = json.loads(msg)
-                # send_all_json( packet )
+                send_all_json( packet )
             else:
                 break
     except Exception as err:
@@ -92,13 +113,28 @@ def read_ws(ws,client):
 
 @sockets.route('/subscribe')
 def subscribe_socket(ws):
-    '''Fufill the websocket URL of /subscribe, every update notify the
-       websocket and read updates from the websocket '''
+    '''Fufill the websocket URL of /subscribe, every update notify the websocket and read updates from the websocket '''
     # XXX: TODO IMPLEMENT ME
-    return None
 
+    # create a client that will receive messages from the world
+    client = Client()
+    clients.append(client)
 
-# I give this to you, this is how you get the raw body/data portion of a post in flask
+    # create a new thread
+    g = gevent.spawn( read_ws, ws, client )    
+    try:
+        while True:
+            # block here
+            msg = client.get()
+            print("SOCKET SEND: %s" % msg)
+            ws.send(msg)
+    except Exception as e:# WebSocketError as e:
+        print("WS Error %s" % e)
+    finally:
+        clients.remove(client)
+        gevent.kill(g)
+
+# I give this to you, this is how you get the raw body/data portion of a post in fla sk
 # this should come with flask but whatever, it's not my project.
 def flask_post_json():
     '''Ah the joys of frameworks! They do so much work for you
