@@ -25,7 +25,7 @@
   <body bgcolor="white" height="100%" width="100%"> 
     <div id="debug"></div>
     <canvas id="c" width="100%" height="100%" style="-webkit-tap-highlight-color: transparent;"></canvas> 
-
+    <button id="clear" onclick="clearCanvas()">Clear</button>
     <script>
       // Fix me
 var canvas = document.getElementById('c');
@@ -45,17 +45,17 @@ debug("Test");
 world = {};
 
 //XXX: TODO Make this prettier!
-function drawCircle(context,entity) {
-    with(context) {
-        beginPath();                
+function drawCircle(context, entity) {
+    with (context) {
+        beginPath();
         lineWidth = 3;
         var x = entity["x"];
         var y = entity["y"];
         //moveTo(x,y);
         fillStyle = entity["colour"];
         strokeStyle = fillStyle;
-        arc(x, y, (entity["radius"])?entity["radius"]:50, 0, 2.0 * Math.PI, false);  
-        stroke();                                
+        arc(x, y, (entity["radius"]) ? entity["radius"] : 100, 0, 2.0 * Math.PI, false);
+        stroke();
     }
 }
 
@@ -235,20 +235,38 @@ mouse = (function() {
     return self;
 })();
 
+// Reference: https:/ / css - tricks.com / snippets / javascript / random - hex - color /
+    function getRandomColor() {
+        return '#' + Math.floor(Math.random() * 16777215).toString(16);
+    }
+
 // Add the application specific mouse listeners!
 //XXX: TODO Make these prettier!
-mouse.mousedowners.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'blue'});
+mouse.mousedowners.push(function (x, y, clicked, e) {
+    addEntityWithoutName({
+        'x': x,
+        'y': y,
+        'colour': getRandomColor()
+    });
 });
 
-mouse.mouseuppers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'red'});
+mouse.mouseuppers.push(function (x, y, clicked, e) {
+    addEntityWithoutName({
+        'x': x,
+        'y': y,
+        'colour': getRandomColor()
+    });
 });
 
-mouse.mousedraggers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'green',
-                          'radius':10});
+mouse.mousedraggers.push(function (x, y, clicked, e) {
+    addEntityWithoutName({
+        'x': x,
+        'y': y,
+        'colour': getRandomColor(),
+        'radius': 10
+    });
 });
+
 
 
 function update() {
@@ -276,12 +294,16 @@ function wsSetup() {
             for (var entity in data) {
                 world[entity] = data[entity];
             }
-            drawNextFrame();
+            drawNextFrame(); // call to draw the next frame after the world is updated 
 
         } catch (e) {
             alert("socket on message: " + e);
         }
     }; 
+}
+
+function clearCanvas() {
+    socket.send({'clear': true})
 }
 
 wsSetup();
