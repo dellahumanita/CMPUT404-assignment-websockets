@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
-# Copyright (c) 2013-2014 Abram Hindle
+# Copyright (c) 2022 Della Humanita
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -59,6 +59,9 @@ class World:
     def world(self):
         return self.space
 
+'''
+    Websocket Handling Reference: https://github.com/uofa-cmput404/cmput404-slides/blob/master/examples/WebSocketsExamples/chat.py
+'''
 clients = list()
 
 def send_all(msg):
