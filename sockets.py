@@ -177,6 +177,7 @@ def get_entity(entity):
 def clear():
     '''Clear the world out!'''
     myWorld.clear()
+    print('CLEARED THE WORLD')
     return jsonify(myWorld.world())
 
 
